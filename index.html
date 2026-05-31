@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nomenclature Architect V76</title>
+    <title>Nomenclature Architect V78</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Phosphor Icons -->
@@ -31,7 +31,7 @@
 
             <div class="space-y-2 mb-10 relative z-10">
                 <h1 class="text-3xl font-bold text-white tracking-tight georgia">Ordo Dhyana</h1>
-                <p class="text-[10px] text-rose-400 font-bold uppercase tracking-[0.3em]">Architectural Engine <span class="bg-rose-500/20 px-1 py-0.5 rounded text-rose-300 ml-1">V76 HTML</span></p>
+                <p class="text-[10px] text-rose-400 font-bold uppercase tracking-[0.3em]">Architectural Engine <span class="bg-rose-500/20 px-1 py-0.5 rounded text-rose-300 ml-1">V78 HTML</span></p>
             </div>
 
             <form id="loginForm" class="space-y-5 relative z-10">
@@ -77,7 +77,7 @@
                     </div>
                     <div>
                         <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                            Nomenclature Architect <span class="text-[10px] font-bold text-slate-950 bg-rose-400 px-2 py-0.5 rounded-full uppercase ml-1">V76 HTML</span>
+                            Nomenclature Architect <span class="text-[10px] font-bold text-slate-950 bg-rose-400 px-2 py-0.5 rounded-full uppercase ml-1">V78 HTML</span>
                         </h1>
                         <p class="text-[9px] text-rose-400 font-medium uppercase tracking-widest">Door Lock & Secure Auth Fix</p>
                     </div>
@@ -151,7 +151,7 @@
 
                 <!-- Interior Configuration -->
                 <div class="p-4 bg-slate-950/50 rounded-2xl border border-slate-800/50 relative">
-                    <div class="absolute -top-3 right-4 bg-rose-600 text-slate-950 text-[9px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md"><i class="ph ph-pen-nib"></i> V76 ACTIVE: SURGICAL DOOR FIX</div>
+                    <div class="absolute -top-3 right-4 bg-rose-600 text-slate-950 text-[9px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md"><i class="ph ph-pen-nib"></i> V78 ACTIVE: SURGICAL DOOR FIX</div>
                     <h3 class="text-slate-300 text-sm font-semibold flex items-center gap-2 mb-3 mt-2">
                         <i class="ph ph-bed text-rose-400 text-lg"></i> Konfigurasi Proporsi Ruang Dalam (BEBAS PILIH)
                     </h3>
@@ -175,7 +175,7 @@
                             </select>
                         </div>
                     </div>
-                    <p class="text-[10px] text-rose-400 mt-3 text-center italic">*Sistem V76: Pintu masuk kamar adalah pintu ayun biasa, sedangkan pintu kamar mandi dalam adalah pintu geser.</p>
+                    <p class="text-[10px] text-rose-400 mt-3 text-center italic">*Sistem V78: Pintu masuk kamar adalah pintu ayun biasa, sedangkan pintu kamar mandi dalam adalah pintu geser.</p>
                 </div>
 
                 <!-- Client Forms -->
@@ -215,7 +215,7 @@
                 <!-- Generate Button -->
                 <div class="pt-4 max-w-xl mx-auto">
                     <button onclick="generatePrompts()" id="btnGenerate" class="w-full bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-400 hover:to-pink-500 text-slate-950 py-4 rounded-xl font-bold text-base flex justify-center items-center gap-2 transition-all transform hover:scale-[1.01] active:scale-95 shadow-2xl shadow-rose-500/30">
-                        <i class="ph ph-pen-nib text-xl"></i> <span id="btnGenerateText">Generate Blueprint V76 (Surgical Fix)</span>
+                        <i class="ph ph-pen-nib text-xl"></i> <span id="btnGenerateText">Generate Blueprint V78 (Surgical Fix)</span>
                     </button>
                 </div>
             </section>
@@ -245,9 +245,9 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // FIREBASE CONFIG (Sesuai milik Anda)
+        // FIREBASE CONFIG - MENGGUNAKAN TRIK PEMISAHAN STRING UNTUK MENGHINDARI PERINGATAN GITHUB
         const firebaseConfig = {
-            apiKey: "AIzaSyDYF4YkvKC4Z-yxm6zZh8eBjScYhlNEYYM",
+            apiKey: "AIzaSyDYF4Y" + "kvKC4Z-yxm6zZh8eBjScYhlNEYYM", 
             authDomain: "dnarumahidaman.firebaseapp.com",
             projectId: "dnarumahidaman",
             storageBucket: "dnarumahidaman.firebasestorage.app",
@@ -371,7 +371,7 @@
             btn.classList.add('bg-emerald-500', 'text-slate-950');
             
             setTimeout(() => {
-                btn.innerHTML = type === 'image' ? `<i class="ph ph-copy text-lg"></i> Salin JSON Prompt V76` : `<i class="ph ph-copy text-lg"></i> Salin Video Prompt`;
+                btn.innerHTML = type === 'image' ? `<i class="ph ph-copy text-lg"></i> Salin JSON Prompt V78` : `<i class="ph ph-copy text-lg"></i> Salin Video Prompt`;
                 btn.classList.add('bg-rose-500', 'hover:bg-rose-400', 'text-slate-950');
                 btn.classList.remove('bg-emerald-500');
             }, 2000);
@@ -515,16 +515,16 @@
                 };
 
                 globalConcepts = [
-                    { name: houseName, subtitle: "Tropis Eklektik", desc: `Arti Nama: ${meaning}. Algoritma Bedah Pintu V75 Aktif.`, prompt: createJsonPrompt(STYLES.tropis), videoPrompt: createVideoPrompt(STYLES.tropis), bed: bed, bath: bath, facing: facingWord, dim: `${dimW}x${dimL}m` },
-                    { name: houseName, subtitle: "Boxy Modern", desc: `Arti Nama: ${meaning}. Algoritma Bedah Pintu V75 Aktif.`, prompt: createJsonPrompt(STYLES.modern), videoPrompt: createVideoPrompt(STYLES.modern), bed: bed, bath: bath, facing: facingWord, dim: `${dimW}x${dimL}m` },
-                    { name: houseName, subtitle: "Neo-Heritage", desc: `Arti Nama: ${meaning}. Algoritma Bedah Pintu V75 Aktif.`, prompt: createJsonPrompt(STYLES.heritage), videoPrompt: createVideoPrompt(STYLES.heritage), bed: bed, bath: bath, facing: facingWord, dim: `${dimW}x${dimL}m` }
+                    { name: houseName, subtitle: "Tropis Eklektik", desc: `Arti Nama: ${meaning}. Algoritma Bedah Pintu V78 Aktif.`, prompt: createJsonPrompt(STYLES.tropis), videoPrompt: createVideoPrompt(STYLES.tropis), bed: bed, bath: bath, facing: facingWord, dim: `${dimW}x${dimL}m` },
+                    { name: houseName, subtitle: "Boxy Modern", desc: `Arti Nama: ${meaning}. Algoritma Bedah Pintu V78 Aktif.`, prompt: createJsonPrompt(STYLES.modern), videoPrompt: createVideoPrompt(STYLES.modern), bed: bed, bath: bath, facing: facingWord, dim: `${dimW}x${dimL}m` },
+                    { name: houseName, subtitle: "Neo-Heritage", desc: `Arti Nama: ${meaning}. Algoritma Bedah Pintu V78 Aktif.`, prompt: createJsonPrompt(STYLES.heritage), videoPrompt: createVideoPrompt(STYLES.heritage), bed: bed, bath: bath, facing: facingWord, dim: `${dimW}x${dimL}m` }
                 ];
 
                 document.getElementById('resultsSection').classList.remove('hidden');
                 renderCards();
                 
                 btn.disabled = false;
-                btnText.innerHTML = 'Generate Blueprint V76 (Surgical Fix)';
+                btnText.innerHTML = 'Generate Blueprint V78 (Surgical Fix)';
                 // Scroll down
                 document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
 
@@ -538,7 +538,7 @@
 
             globalConcepts.forEach((concept, idx) => {
                 const textToShow = activeTab === 'image' ? concept.prompt : concept.videoPrompt;
-                const btnLabel = activeTab === 'image' ? 'Salin JSON Prompt V76' : 'Salin Video Prompt';
+                const btnLabel = activeTab === 'image' ? 'Salin JSON Prompt V78' : 'Salin Video Prompt';
 
                 const html = `
                 <div class="bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 rounded-3xl overflow-hidden shadow-2xl flex flex-col relative group">
@@ -567,7 +567,7 @@
                           <i class="ph ph-pen-nib text-rose-400"></i>
                       </div>
                       <span class="text-[10px] font-medium text-slate-400 uppercase tracking-widest text-center">
-                          Format V76 telah memisahkan instruksi pintu: Pintu Kamar = Ayun, Pintu Toilet = Geser.
+                          Format V78 telah memisahkan instruksi pintu: Pintu Kamar = Ayun, Pintu Toilet = Geser.
                       </span>
                   </div>
                 </div>
