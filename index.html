@@ -1,0 +1,679 @@
+import React, { useState } from 'react';
+import { ChevronDown, Copy, User, Users, Check, RefreshCw, LayoutTemplate, Wallet, Camera, BedDouble, Bath, Video, Fingerprint, Footprints, Compass, MapPin, LogIn, FileText, Eye, Type, ArrowRightLeft, Lock, Grid, PenTool, Mail, AlertCircle, LogOut } from 'lucide-react';
+
+// ==========================================
+// FIREBASE CONFIGURATION & INITIALIZATION
+// ==========================================
+import { initializeApp } from "firebase/app";
+import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDYF4YkvKC4Z-yxm6zZh8eBjScYhlNEYYM",
+  authDomain: "dnarumahidaman.firebaseapp.com",
+  projectId: "dnarumahidaman",
+  storageBucket: "dnarumahidaman.firebasestorage.app",
+  messagingSenderId: "942381723858",
+  appId: "1:942381723858:web:c138fece9372ce890ebd0b"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// ==========================================
+// ARCHITECTURAL DATA & DICTIONARIES
+// ==========================================
+const SHIO = ['Tikus', 'Kerbau', 'Macan', 'Kelinci', 'Naga', 'Ular', 'Kuda', 'Kambing', 'Monyet', 'Ayam', 'Anjing', 'Babi'];
+const WETON_HARI = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+const WETON_PASARAN = ['Legi', 'Pahing', 'Pon', 'Wage', 'Kliwon'];
+const BLOOD_TYPES = ['A', 'B', 'AB', 'O'];
+
+const DIRECTIONS = [
+  'Utara (Kesehatan & Aliran)', 
+  'Timur (Keberuntungan & Kayu)', 
+  'Selatan (Reputasi & Api)', 
+  'Barat (Keluarga & Logam)', 
+  'Timur Laut (Ilmu & Bumi)', 
+  'Tenggara (Kekayaan & Kayu)', 
+  'Barat Daya (Cinta & Bumi)', 
+  'Barat Laut (Penolong & Logam)'
+];
+
+const ROMAN_PREFIXES = { 'A': 'Domus', 'B': 'Nova', 'AB': 'Aedes', 'O': 'Ordo' };
+const ROMAN_MEANING = { 'A': 'Kediaman', 'B': 'Pembaruan', 'AB': 'Suaka', 'O': 'Keteraturan' };
+
+const SANSKRIT_SUFFIXES = { 'Senin': 'Chandra', 'Selasa': 'Agni', 'Rabu': 'Tirta', 'Kamis': 'Bayu', 'Jumat': 'Shanti', 'Sabtu': 'Bhuana', 'Minggu': 'Surya' };
+const SANSKRIT_MEANING = { 'Senin': 'Bulan', 'Selasa': 'Api', 'Rabu': 'Air', 'Kamis': 'Angin', 'Jumat': 'Kedamaian', 'Sabtu': 'Semesta', 'Minggu': 'Matahari' };
+
+const ARCHITECTURAL_DICTIONARY = {
+  shio: { 'Tikus': 'efficient space usage', 'Kerbau': 'sturdy massing', 'Macan': 'striking angles', 'Kelinci': 'soft curves', 'Naga': 'grand prominent entrance', 'Ular': 'sleek minimalist lines', 'Kuda': 'wide open frames', 'Kambing': 'harmonious textures', 'Monyet': 'innovative shapes', 'Ayam': 'meticulous symmetry', 'Anjing': 'secure comforting layout', 'Babi': 'expansive relaxing zones' },
+  wetonPasaran: { 'Legi': 'bright airy lighting', 'Pahing': 'warm terracotta accents', 'Pon': 'elegant golden hour lighting', 'Wage': 'calm deep dark wood tones', 'Kliwon': 'textured natural stone elements' },
+  bloodType: { 'A': 'organized perfectionist aesthetics', 'B': 'creative asymmetrical elements', 'AB': 'contrast of raw concrete and sleek glass', 'O': 'welcoming facade' }
+};
+
+const FENGSHUI_ELEMENTS = {
+  'Utara (Kesehatan & Aliran)': 'Water element dominance, flowing forms, dark blue or black subtle accents',
+  'Timur (Kesehatan & Kayu)': 'Wood element dominance, vibrant green plant life integration, vertical lines',
+  'Selatan (Reputasi & Api)': 'Fire element dominance, warm ambient lighting, red or orange brick accents',
+  'Barat (Keluarga & Logam)': 'Metal element dominance, white and metallic accents, clean finish',
+  'Timur Laut (Ilmu & Bumi)': 'Earth element dominance, natural stone walls, solid square massing',
+  'Tenggara (Kekayaan & Kayu)': 'Wood element dominance, lush dense greenery, wooden vertical louvers',
+  'Barat Daya (Cinta & Bumi)': 'Earth element dominance, warm yellow/brown accents, heavy foundational look',
+  'Barat Laut (Penolong & Logam)': 'Metal element dominance, polished metallic details, sleek facade'
+};
+
+const BUDGET_TIERS = {
+  'ekonomis': { label: '< 500 Juta', ai_modifier: 'affordable minimalist finish' },
+  'menengah': { label: '500 Jt - 1.5 M', ai_modifier: 'beautiful elegant finish' },
+  'premium': { label: '1.5 M - 5 M', ai_modifier: 'premium custom materials' },
+  'sultan': { label: '> 5 Milyar', ai_modifier: 'ultra-luxury architectural masterpiece' }
+};
+
+const UserForm = ({ userKey, title, isHusband, formData, handleInputChange }) => (
+  <div className="p-4 rounded-xl border backdrop-blur-sm bg-slate-900/60 border-slate-700/50 space-y-3 shadow-md">
+    <h3 className="text-sm font-semibold flex items-center gap-2 pb-2 border-b text-rose-400 border-slate-800">
+      <User size={14} /> {title}
+    </h3>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+      <div className="space-y-1"><label className="text-slate-400 font-medium">Shio</label><div className="relative"><select value={formData[userKey].shio} onChange={(e) => handleInputChange(userKey, 'shio', e.target.value)} className="w-full bg-slate-950 border border-slate-700 text-slate-200 rounded-md py-2 px-2 appearance-none outline-none focus:border-rose-500">{SHIO.map(s=><option key={s} value={s}>{s}</option>)}</select><ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={12} /></div></div>
+      <div className="space-y-1"><label className="text-slate-400 font-medium">Gol. Darah</label><div className="relative"><select value={formData[userKey].blood} onChange={(e) => handleInputChange(userKey, 'blood', e.target.value)} className="w-full bg-slate-950 border border-slate-700 text-slate-200 rounded-md py-2 px-2 appearance-none outline-none focus:border-rose-500">{BLOOD_TYPES.map(b=><option key={b} value={b}>{b}</option>)}</select><ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={12} /></div></div>
+      <div className="space-y-1"><label className="text-slate-400 font-medium">Hari Lahir</label><div className="relative"><select value={formData[userKey].hari} onChange={(e) => handleInputChange(userKey, 'hari', e.target.value)} className="w-full bg-slate-950 border border-slate-700 text-slate-200 rounded-md py-2 px-2 appearance-none outline-none focus:border-rose-500">{WETON_HARI.map(h=><option key={h} value={h}>{h}</option>)}</select><ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={12} /></div></div>
+      <div className="space-y-1"><label className="text-slate-400 font-medium">Pasaran</label><div className="relative"><select value={formData[userKey].pasaran} onChange={(e) => handleInputChange(userKey, 'pasaran', e.target.value)} className="w-full bg-slate-950 border border-slate-700 text-slate-200 rounded-md py-2 px-2 appearance-none outline-none focus:border-rose-500">{WETON_PASARAN.map(p=><option key={p} value={p}>{p}</option>)}</select><ChevronDown className="absolute right-2 top-2.5 text-slate-500 pointer-events-none" size={12} /></div></div>
+    </div>
+  </div>
+);
+
+export default function App() {
+  // Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+
+  // App State
+  const [hasEntered, setHasEntered] = useState(false);
+  const [status, setStatus] = useState('single');
+  const [floors, setFloors] = useState('1 Lantai');
+  const [dimensions, setDimensions] = useState({ width: 8, length: 12, facing: DIRECTIONS[2] }); 
+  const [budget, setBudget] = useState('menengah');
+  const [fenceType, setFenceType] = useState('full');
+  
+  const [bedrooms, setBedrooms] = useState('2'); 
+  const [bathrooms, setBathrooms] = useState('2'); 
+  const [bathType, setBathType] = useState('kombinasi'); 
+  
+  const [formData, setFormData] = useState({
+    user1: { shio: 'Ayam', hari: 'Jumat', pasaran: 'Kliwon', blood: 'O' },
+    user2: { shio: 'Kelinci', hari: 'Senin', pasaran: 'Legi', blood: 'A' },
+  });
+  
+  const [generatedConcepts, setGeneratedConcepts] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState(null);
+  const [activeTab, setActiveTab] = useState('image');
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    setIsAuthenticating(true);
+    
+    try {
+      await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+      setIsAuthenticated(true);
+      setIsAuthenticating(false);
+    } catch (error) {
+      setIsAuthenticating(false);
+      if (error.code === 'auth/invalid-email') setAuthError('Format email tidak valid.');
+      else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') setAuthError('Kredensial tidak cocok.');
+      else if (error.code === 'auth/invalid-credential') setAuthError('Email atau Password salah.');
+      else setAuthError('Akses ditolak. Silakan coba lagi.');
+    }
+  };
+
+  // V76 HOTFIX: NATIVE LOGOUT FUNCTION
+  const handleLogout = () => {
+    console.log("V76: Logout triggered by user");
+    
+    // 1. Putuskan sesi Firebase (dieksekusi secara independen di latar belakang)
+    if (auth) {
+      signOut(auth).then(() => {
+        console.log("Firebase session ended successfully");
+        
+        // 2. Matikan state UI secara absolut untuk mengembalikan layar ke gerbang login
+        setIsAuthenticated(false);
+        setHasEntered(false);
+        
+        // 3. Kosongkan semua data rahasia
+        setLoginEmail('');
+        setLoginPassword('');
+        setGeneratedConcepts(null);
+        setAuthError('');
+      }).catch((error) => {
+        console.error("Firebase logout error:", error);
+        // Fallback: even if Firebase fails, force logout UI
+        setIsAuthenticated(false);
+        setHasEntered(false);
+      });
+    } else {
+        // Fallback: force logout UI if auth is not initialized
+        setIsAuthenticated(false);
+        setHasEntered(false);
+    }
+  };
+
+  const handleInputChange = (user, field, value) => {
+    setFormData(prev => ({ ...prev, [user]: { ...prev[user], [field]: value } }));
+  };
+
+  const copyToClipboard = (text, index, type) => {
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.top = "0"; textArea.style.left = "0"; textArea.style.position = "fixed";
+      document.body.appendChild(textArea); textArea.focus(); textArea.select();
+      document.execCommand('copy'); document.body.removeChild(textArea);
+      setCopiedIndex(`${index}-${type}`); setTimeout(() => setCopiedIndex(null), 2000);
+    } catch (err) { console.error('Gagal menyalin: ', err); }
+  };
+
+  const generateHouseNameData = () => {
+    const u1 = formData.user1;
+    const u2 = formData.user2;
+    const romanKey = u1.blood;
+    const romanWord = ROMAN_PREFIXES[romanKey];
+    const romanMeaning = ROMAN_MEANING[romanKey];
+    const sanskritKey = status === 'pasangan' ? u2.hari : u1.hari;
+    const sanskritWord = SANSKRIT_SUFFIXES[sanskritKey];
+    const sanskritMeaning = SANSKRIT_MEANING[sanskritKey];
+    const fullName = `${romanWord} ${sanskritWord}`;
+    const fullMeaning = `Romawi: ${romanMeaning} | Sansekerta: ${sanskritMeaning}`;
+    return { name: fullName, meaning: fullMeaning };
+  };
+
+  const generatePrompts = () => {
+    setIsGenerating(true);
+    
+    setTimeout(() => {
+      const u1 = formData.user1;
+      const nomenclature = generateHouseNameData();
+      const houseName = nomenclature.name; 
+
+      const wetonPasaranStyle = ARCHITECTURAL_DICTIONARY.wetonPasaran[u1.pasaran];
+      const bloodTypeStyle = ARCHITECTURAL_DICTIONARY.bloodType[u1.blood];
+      const shioStyle = ARCHITECTURAL_DICTIONARY.shio[u1.shio];
+      const fengshuiElement = FENGSHUI_ELEMENTS[dimensions.facing];
+      
+      const integratedEnergy = `${fengshuiElement}. Client aura: ${wetonPasaranStyle}, ${bloodTypeStyle}, ${shioStyle}. ${BUDGET_TIERS[budget].ai_modifier}.`;
+
+      const styles = {
+          tropis: {
+              name: "Tropical Architecture",
+              roof: "Symmetrical Hipped Roof (Atap Perisai)",
+              materials: ["Exposed terracotta brick", "Vertical wood louvers", "Concrete structures"]
+          },
+          modern: {
+              name: "Ultra-Modern Minimalist Boxy",
+              roof: "Flat Layered Roof",
+              materials: ["Smooth microcement concrete walls", "Wood panel accents", "Large frameless glass windows"]
+          },
+          heritage: {
+              name: "Neo-Heritage Classic Mansion",
+              roof: "Classic Symmetrical Limasan Roof",
+              materials: ["Teak wood carvings", "Traditional prominent stucco pillars", "Warm terracotta wall textures"]
+          }
+      };
+
+      let roomArray = [
+          "1 Spacious Master Bedroom",
+          "1 Private En-Suite Bathroom (CRITICAL: NESTED ENTIRELY INSIDE the Master Bedroom. It must be drawn as a smaller box completely enclosed within the Master Bedroom's walls. NO door access from the main hallway)" 
+      ];
+      
+      if (parseInt(bedrooms) > 1) {
+          roomArray.push(`${parseInt(bedrooms) - 1} Secondary Bedroom(s)`);
+      }
+      
+      if (parseInt(bathrooms) > 1) {
+          if (bathType === 'dalam') {
+              roomArray.push(`${parseInt(bathrooms) - 1} additional En-Suite Bathroom(s) placed INSIDE the secondary bedrooms`);
+          } else {
+              roomArray.push(`${parseInt(bathrooms) - 1} Common Guest Bathroom(s) located in the main hallway area`);
+          }
+      }
+      
+      roomArray.push("Central spacious living room", "Kitchen + dining area (rear zone)", "Carport (front left side)");
+      
+      const fenceDescription = fenceType === 'full' 
+          ? "TALL luxury boundary privacy wall with high sliding gate" 
+          : "Open cluster front yard with NO fence";
+
+      const createJsonPrompt = (styleObj) => {
+          const promptData = {
+              objective: "Create a luxurious split architectural visualization: Top is a detailed dark blueprint, Bottom is a photorealistic 3D render matching the blueprint EXACTLY.",
+              aspect_ratio: "3:4",
+              
+              user_configuration_lock: {
+                  house_name: houseName,
+                  levels: floors,
+                  footprint_dimensions: `${dimensions.width}m x ${dimensions.length}m`,
+                  facing_direction: dimensions.facing.split(' ')[0],
+                  total_bedrooms_requested: bedrooms,
+                  total_bathrooms_requested: bathrooms,
+                  bathroom_configuration: bathType === 'dalam' ? 'ALL bathrooms are En-Suites (Nested inside bedrooms)' : '1 Master En-Suite + Common Guest Baths',
+                  front_perimeter: fenceDescription,
+                  architectural_style: styleObj.name
+              },
+
+              composition: {
+                  layout: "vertical split",
+                  alignment: "perfect structural correspondence between top and bottom panels"
+              },
+              
+              top_section: {
+                  type: "dark luxury 3D-like architectural floor plan blueprint",
+                  visual_style: {
+                      background: "deep charcoal navy black",
+                      lines: "thin glowing beige and gold lines",
+                      walls: "solidly extruded 3D walls with glowing warm orange lighting underneath the wall edges",
+                      labels: "clean elegant modern gold-colored sans-serif text"
+                  },
+                  content: {
+                      rooms: roomArray,
+                      MANDATORY_STRUCTURAL_DETAILS: [
+                          "beautifully detailed furniture outlines inside rooms",
+                          "CRITICAL NESTED FIX: The Master Bathroom is NOT a public room. It MUST be drawn as a smaller box completely enclosed within the Master Bedroom.",
+                          "CRITICAL DOOR FIX: The entrance to the MASTER BEDROOM from the main hallway MUST be a standard SWING DOOR symbol (pintu ayun biasa).", 
+                          "CRITICAL SLIDING DOOR FIX: The entrance to the MASTER EN-SUITE BATHROOM *inside* the Master Bedroom MUST be a clearly marked SLIDING DOOR (Pintu Geser) symbol.", 
+                          "CRITICAL DOOR FIX: EVERY other BEDROOM MUST have a clearly drawn open SWING DOOR symbol connecting it to the main interior hallway. NO sealed rooms.",
+                          "CRITICAL GARAGE FIX: Solid concrete wall drawn directly behind the carport. ABSOLUTELY NO GLASS WALL behind the car.",
+                          "CRITICAL ENTRY FIX: Open plan entryway. NO vestibule, NO double doors in the main entrance hallway."
+                      ]
+                  }
+              },
+              
+              bottom_section: {
+                  type: "photorealistic modern house front render",
+                  constraint: "MUST MATCH THE BLUEPRINT EXACTLY in layout, room positioning, and footprint proportions",
+                  architecture: {
+                      roof: styleObj.roof,
+                      materials: styleObj.materials,
+                      energy_and_fengshui: integratedEnergy
+                  },
+                  MANDATORY_LAYOUT_MAPPING: [
+                      "carport is on the left side with a parked car inside",
+                      "HOTFIX: Solid concrete wall behind the carport. NO glass windows or visibility behind the car.",
+                      "HOTFIX: The front right window shows a warm Bedroom interior with curtains and bed. DO NOT show a living room.",
+                      "HOTFIX: The roofline and facade structure above the main window is SEAMLESS, flat, clean, and structurally aligned.",
+                      "main entrance door matches the open plan path from the blueprint EXACTLY"
+                  ],
+                  environment: {
+                      landscape: "minimal elegant front landscaping with warm recessed uplighting",
+                      gate: fenceDescription
+                  },
+                  lighting: {
+                      time: "golden hour evening sky",
+                      style: "soft sunset natural light casting realistic shadows"
+                  }
+              },
+              
+              absolute_consistency_rules: [
+                  "The layout of rooms in the blueprint must align perfectly with the facade volumes below",
+                  "Master Bathroom MUST be a nested room completely inside the Master Bedroom walls",
+                  "Master Bedroom entrance is a SWING DOOR, Master Bathroom entrance is a SLIDING DOOR", 
+                  "ALL other BEDROOMS MUST BE ACCESSIBLE FROM THE INTERIOR VIA VISIBLE INTERNAL DOORS",
+                  "The carport must have a solid opaque back wall in both views"
+              ],
+              
+              negative_constraints: [
+                  "no master bathroom located in the public hallway", 
+                  "no shared access to the master bathroom",
+                  "no sealed rooms without interior doors", 
+                  "no solid walls blocking bedroom entrances", 
+                  "no structural glitch gantung", 
+                  "no broken hanging roof segments above the window", 
+                  "no transparent garage glass back wall", 
+                  "no vestibule or secondary inner door", 
+                  "no mismatch between blueprint and render"
+              ]
+          };
+
+          const jsonString = JSON.stringify(promptData, null, 2);
+          return `${jsonString}\n\n--ar 3:4 --v 6.0 --style raw`;
+      };
+
+      const createVideoPrompt = (styleObj) => {
+        return `Cinematic drone camera orbiting a stunning ${floors === '1 Lantai' ? 'single-story' : 'two-story'} residence named "${houseName}". Style: ${styleObj.name}. Materials: ${styleObj.materials.join(', ')}. Roof: ${styleObj.roof}. Geometry: Strict ${dimensions.width}m x ${dimensions.length}m rectangular footprint. ${integratedEnergy} Starting from an ELEVATED 45-DEGREE HIGH-ANGLE showing the facade, solid wall behind carport, clear pathway to main entrance door. Slowly panning around, then smoothly elevating for a direct top-down flyover showing the roof. Golden hour lighting, photorealistic 8k --ar 16:9 --v 6.0`;
+      };
+
+      let concepts = [
+          {
+            name: `${houseName}`, subtitle: `Tropis Eklektik`,
+            description: `Arti Nama: ${nomenclature.meaning}. Algoritma Bedah Pintu V75 Aktif.`,
+            prompt: createJsonPrompt(styles.tropis),
+            videoPrompt: createVideoPrompt(styles.tropis)
+          },
+          {
+            name: `${houseName}`, subtitle: `Boxy Modern`,
+            description: `Arti Nama: ${nomenclature.meaning}. Algoritma Bedah Pintu V75 Aktif.`,
+            prompt: createJsonPrompt(styles.modern),
+            videoPrompt: createVideoPrompt(styles.modern)
+          },
+          {
+            name: `${houseName}`, subtitle: `Neo-Heritage`,
+            description: `Arti Nama: ${nomenclature.meaning}. Algoritma Bedah Pintu V75 Aktif.`,
+            prompt: createJsonPrompt(styles.heritage),
+            videoPrompt: createVideoPrompt(styles.heritage)
+          }
+      ];
+
+      setGeneratedConcepts(concepts);
+      setIsGenerating(false);
+      setActiveTab('image');
+    }, 1500);
+  };
+
+  // LAYAR LOGIN (FIREBASE GATE)
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-950 via-gray-900 to-black flex flex-col items-center justify-center p-4 font-sans selection:bg-rose-500/30">
+        
+        <div className="max-w-md w-full bg-slate-900/80 p-10 rounded-[2.5rem] border border-slate-700/50 shadow-2xl backdrop-blur-xl text-center relative overflow-hidden">
+          <div className="absolute -top-20 -right-20 w-48 h-48 bg-rose-500/10 blur-[60px] rounded-full pointer-events-none"></div>
+          <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-pink-600/10 blur-[60px] rounded-full pointer-events-none"></div>
+
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 w-24 h-24 mx-auto rounded-3xl flex items-center justify-center shadow-inner border border-slate-700 mb-8 relative z-10">
+            <Lock size={36} className="text-rose-400 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)]" />
+          </div>
+
+          <div className="space-y-2 mb-10 relative z-10">
+            <h1 className="text-3xl font-bold text-white tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>Ordo Dhyana</h1>
+            <p className="text-[10px] text-rose-400 font-bold uppercase tracking-[0.3em]">Architectural Engine <span className="bg-rose-500/20 px-1 py-0.5 rounded text-rose-300 ml-1">V76</span></p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-5 relative z-10">
+            <div className="space-y-4">
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-slate-500 group-focus-within:text-rose-400 transition-colors" />
+                </div>
+                <input 
+                  type="email" 
+                  autoComplete="off"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  className="block w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-slate-700/80 rounded-2xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500 transition-all text-sm" 
+                  placeholder="Email Akses" 
+                  required
+                />
+              </div>
+
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-slate-500 group-focus-within:text-rose-400 transition-colors" />
+                </div>
+                <input 
+                  type="password" 
+                  autoComplete="new-password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  className="block w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-slate-700/80 rounded-2xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500 transition-all text-sm" 
+                  placeholder="Kata Sandi Rahasia" 
+                  required
+                />
+              </div>
+            </div>
+
+            <div className={`h-4 flex items-center justify-center transition-opacity duration-300 ${authError ? 'opacity-100' : 'opacity-0'}`}>
+              <p className="text-red-400 text-[11px] flex items-center gap-1.5 font-medium">
+                <AlertCircle size={12} /> {authError}
+              </p>
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={isAuthenticating}
+              className="w-full bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-400 hover:to-pink-500 text-slate-950 py-4 rounded-2xl font-bold text-sm tracking-wide transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:hover:translate-y-0 shadow-[0_0_20px_rgba(244,63,94,0.3)] mt-2 flex justify-center items-center gap-2"
+            >
+              {isAuthenticating ? <RefreshCw size={18} className="animate-spin" /> : "Otorisasi Akses"}
+            </button>
+          </form>
+
+          <div className="pt-10 relative z-10">
+            <div className="w-12 h-px bg-slate-800 mx-auto mb-4"></div>
+            <p className="text-[10px] text-slate-500 font-medium tracking-[0.2em] uppercase">
+              Made by ProSbe
+            </p>
+          </div>
+        </div>
+
+      </div>
+    );
+  }
+
+  // LAYAR WELCOME (DASHBOARD AWAL)
+  if (!hasEntered) {
+    return (
+      <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-950 via-gray-900 to-black flex flex-col items-center justify-center p-4 font-sans selection:bg-rose-500/30">
+         <div className="max-w-md w-full bg-slate-900/80 p-8 rounded-3xl border border-slate-700/50 shadow-2xl backdrop-blur-md text-center space-y-8 relative overflow-hidden">
+            <div className="absolute -top-16 -right-16 w-32 h-32 bg-rose-500/10 blur-3xl rounded-full"></div>
+            <div className="absolute -bottom-16 -left-16 w-32 h-32 bg-pink-500/10 blur-3xl rounded-full"></div>
+
+            <div className="bg-gradient-to-br from-rose-400 to-pink-600 w-20 h-20 mx-auto rounded-3xl flex items-center justify-center shadow-lg shadow-rose-500/30 relative z-10">
+               <PenTool size={40} className="text-slate-950" />
+            </div>
+            <div className="space-y-2 relative z-10">
+               <h1 className="text-3xl font-bold text-white tracking-tight">Ordo Dhyana</h1>
+               <p className="text-xs text-rose-400 font-bold uppercase tracking-widest">Nomenclature Architect <span className="bg-rose-500/20 px-1 py-0.5 rounded text-rose-300 ml-1">V76</span></p>
+            </div>
+            <div className="text-sm text-slate-300 leading-relaxed bg-black/40 p-5 rounded-2xl border border-slate-800/80 relative z-10">
+               <b>V76 UPDATE:</b> <br/><br/>
+               Memperbaiki bug tombol *Logout* pada saat *link* dibagikan. Memastikan keamanan privasi dengan *Native Logout Event* yang bekerja di semua browser HP.
+            </div>
+            <button
+               onClick={() => setHasEntered(true)}
+               className="w-full bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-400 hover:to-pink-500 text-slate-950 py-4 rounded-xl font-bold text-base flex justify-center items-center gap-2 transition-all transform hover:scale-[1.02] active:scale-95 shadow-xl shadow-rose-500/20 relative z-10"
+            >
+               <LogIn size={20} /> Masuk ke Dashboard V76
+            </button>
+            <div className="pt-2 relative z-10">
+              <p className="text-[10px] text-slate-600 font-medium tracking-[0.2em] uppercase">
+                Made by ProSbe
+              </p>
+            </div>
+         </div>
+      </div>
+    );
+  }
+
+  // APLIKASI UTAMA
+  return (
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-950 via-gray-900 to-black text-slate-200 font-sans selection:bg-rose-500/30">
+      <header className="border-b border-slate-800/80 bg-slate-950/80 sticky top-0 z-20 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-br from-rose-400 to-pink-600 p-2 rounded-xl text-slate-950 shadow-lg shadow-rose-500/20">
+              <PenTool size={22} strokeWidth={2.5} />
+            </div>
+            <div>
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                Nomenclature Architect <span className="text-[10px] font-bold text-slate-950 bg-rose-400 px-2 py-0.5 rounded-full uppercase ml-1">V76</span>
+              </h1>
+              <p className="text-[9px] text-rose-400 font-medium uppercase tracking-widest">Door Lock & Secure Auth Fix</p>
+            </div>
+          </div>
+          
+          {/* Header Action: Native V76 Logout Button */}
+          <div className="relative z-50">
+            <button 
+              type="button"
+              onClick={handleLogout}
+              className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition-all flex items-center gap-2 text-xs font-bold uppercase tracking-widest cursor-pointer shadow-lg shadow-rose-500/20 active:scale-95"
+              title="Keluar dari sesi dengan aman"
+            >
+              <LogOut size={16} /> <span className="hidden sm:inline">Keluar</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8 relative z-10">
+        
+        <section className="bg-slate-900/60 border border-slate-700/50 rounded-3xl p-5 sm:p-8 shadow-2xl backdrop-blur-md space-y-6 relative z-10">
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center border-b border-slate-800/50 pb-6 relative">
+              <div className="bg-slate-950/70 p-1.5 rounded-xl border border-slate-800 flex w-full sm:w-auto relative">
+                {fenceType === 'full' && <div className="absolute -top-3 right-2 bg-rose-500 text-white text-[8px] font-bold px-2 py-0.5 rounded-full z-10 flex items-center gap-1"><Footprints size={10}/> Pagar TINGGI: ON</div>}
+                <button onClick={() => setFenceType('cluster')} className={`flex-1 sm:px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${fenceType === 'cluster' ? 'bg-slate-800 text-white border border-slate-600' : 'text-slate-400'}`}>Cluster Terbuka</button>
+                <button onClick={() => setFenceType('full')} className={`flex-1 sm:px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${fenceType === 'full' ? 'bg-slate-800 text-white border border-slate-600' : 'text-slate-400'}`}>Pagar Penuh</button>
+              </div>
+              <div className="bg-slate-950/70 p-1.5 rounded-xl border border-slate-800 flex w-full sm:w-auto">
+                  <button onClick={() => setStatus('single')} className={`flex-1 sm:px-6 py-2.5 rounded-lg text-sm font-medium flex justify-center items-center gap-2 transition-all ${status === 'single' ? 'bg-rose-500 text-slate-950' : 'text-slate-400'}`}><User size={16} /> Profil Single</button>
+                  <button onClick={() => setStatus('pasangan')} className={`flex-1 sm:px-6 py-2.5 rounded-lg text-sm font-medium flex justify-center items-center gap-2 transition-all ${status === 'pasangan' ? 'bg-rose-500 text-slate-950' : 'text-slate-400'}`}><Users size={16} /> Profil Pasangan</button>
+              </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-3">
+              <div className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800/50 space-y-3 relative">
+                  <h3 className="text-white text-sm font-semibold flex items-center gap-2"><LayoutTemplate size={16} className="text-rose-400"/> Skala Lahan Eksterior & Orientasi</h3>
+                  <div className="flex flex-wrap items-center gap-2">
+                      <input type="number" value={dimensions.width} onChange={(e) => setDimensions({...dimensions, width: e.target.value})} className="w-16 bg-slate-900 border border-slate-700 text-white rounded-md py-2 text-center text-sm outline-none focus:border-rose-500" />
+                      <span className="text-slate-500">x</span>
+                      <input type="number" value={dimensions.length} onChange={(e) => setDimensions({...dimensions, length: e.target.value})} className="w-16 bg-slate-900 border border-slate-700 text-white rounded-md py-2 text-center text-sm outline-none focus:border-rose-500" />
+                      <span className="text-slate-500 text-sm">m</span>
+                       <select value={floors} onChange={(e) => setFloors(e.target.value)} className="flex-1 min-w-[100px] bg-slate-900 border border-slate-700 text-slate-200 rounded-md py-2 px-2 text-sm outline-none focus:border-rose-500"><option value="1 Lantai">1 Lt</option><option value="Lebih dari 1">Bertingkat</option></select>
+                  </div>
+                  <div className="relative pt-2">
+                      <select value={dimensions.facing} onChange={(e) => setDimensions({...dimensions, facing: e.target.value})} className="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-md py-2 px-3 text-sm focus:border-rose-500 outline-none appearance-none">
+                          {DIRECTIONS.map(d => <option key={d} value={d}>Rumah Hadap {d}</option>)}
+                      </select>
+                      <MapPin className="absolute right-3 top-4 text-rose-500 pointer-events-none" size={14} />
+                  </div>
+              </div>
+               <div className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800/50 space-y-3">
+                  <h3 className="text-white text-sm font-semibold flex items-center gap-2"><Wallet size={16} className="text-rose-400"/> Budget Realistis</h3>
+                  <div className="relative">
+                      <select value={budget} onChange={(e) => setBudget(e.target.value)} className="w-full bg-slate-900 border border-slate-700 text-white rounded-md py-2 px-3 text-sm focus:border-rose-500 outline-none appearance-none">
+                          <option value="ekonomis">{BUDGET_TIERS['ekonomis'].label} - Tipe Standar</option>
+                          <option value="menengah">{BUDGET_TIERS['menengah'].label} - Cluster Modern</option>
+                          <option value="premium">{BUDGET_TIERS['premium'].label} - Townhouse Mewah</option>
+                          <option value="sultan">{BUDGET_TIERS['sultan'].label} - Resort Premium</option>
+                      </select>
+                      <ChevronDown className="absolute right-3 top-2.5 text-rose-500 pointer-events-none" size={14} />
+                  </div>
+              </div>
+          </div>
+
+          <div className="p-4 bg-slate-950/50 rounded-2xl border border-slate-800/50 relative">
+             <div className="absolute -top-3 right-4 bg-rose-600 text-slate-950 text-[9px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md"><PenTool size={12}/> V76 ACTIVE: SURGICAL DOOR FIX</div>
+             <h3 className="text-slate-300 text-sm font-semibold flex items-center gap-2 mb-3 mt-2">
+                <BedDouble size={16} className="text-rose-400" /> Konfigurasi Proporsi Ruang Dalam (BEBAS PILIH)
+             </h3>
+             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                    <label className="text-slate-500 text-[11px] font-medium uppercase tracking-wider">Jml. Kamar Tidur</label>
+                    <select value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} className="w-full bg-slate-900/80 border border-slate-700 text-white rounded-md py-2 px-3 text-sm outline-none focus:border-rose-500">
+                        <option value="1">1 Kamar</option>
+                        <option value="2">2 Kamar</option>
+                        <option value="3">3 Kamar</option>
+                        <option value="4">4 Kamar</option>
+                    </select>
+                </div>
+                <div className="space-y-1.5">
+                    <label className="text-slate-500 text-[11px] font-medium uppercase tracking-wider">Jml. Kamar Mandi</label>
+                    <select value={bathrooms} onChange={(e) => setBathrooms(e.target.value)} className="w-full bg-slate-900/80 border border-slate-700 text-white rounded-md py-2 px-3 text-sm outline-none focus:border-rose-500">
+                        <option value="1">1 KM Utama</option>
+                        <option value="1.5">1 KM + 1 Powder Room</option>
+                        <option value="2">2 KM</option>
+                        <option value="3">3 KM</option>
+                    </select>
+                </div>
+                <div className="space-y-1.5">
+                    <label className="text-slate-500 text-[11px] font-medium uppercase tracking-wider">Tipe KM / Toilet</label>
+                    <select value={bathType} onChange={(e) => setBathType(e.target.value)} className="w-full bg-slate-900/80 border border-slate-700 text-white rounded-md py-2 px-3 text-sm outline-none focus:border-rose-500">
+                        <option value="dalam">Full Dalam (En-Suite)</option>
+                        <option value="kombinasi">Kombinasi (Dalam & Luar)</option>
+                    </select>
+                </div>
+             </div>
+             <p className="text-[10px] text-rose-400 mt-3 text-center italic">*Sistem V76 memastikan Pintu Ayun untuk Kamar, dan Pintu Geser untuk En-suite.</p>
+          </div>
+
+          <div className="pt-2">
+            <h3 className="text-sm font-semibold text-rose-400 mb-3 flex items-center justify-center gap-2"><Fingerprint size={16} /> Identitas Energi Klien & Nama Romawi-Sansekerta</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+              <UserForm userKey="user1" title={status === 'pasangan' ? "Pilar 1: Suami (Akar Romawi)" : "Pilar 1: Klien Utama"} isHusband={true} formData={formData} handleInputChange={handleInputChange} />
+              {status === 'pasangan' && (
+                <UserForm userKey="user2" title="Pilar 2: Istri (Akar Sansekerta)" isHusband={false} formData={formData} handleInputChange={handleInputChange} />
+              )}
+            </div>
+          </div>
+
+          <div className="pt-4 max-w-xl mx-auto">
+            <button onClick={generatePrompts} disabled={isGenerating} className="w-full bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-400 hover:to-pink-500 text-slate-950 py-4 rounded-xl font-bold text-base flex justify-center items-center gap-2 transition-all transform hover:scale-[1.01] active:scale-95 disabled:opacity-70 shadow-2xl shadow-rose-500/30">
+              {isGenerating ? <><RefreshCw className="animate-spin" size={20} /> Meracik V76 Prompt...</> : <><PenTool size={20} /> Generate Blueprint V76 (Secure Link)</>}
+            </button>
+          </div>
+        </section>
+
+        {generatedConcepts && (
+          <section className="animate-in fade-in slide-in-from-bottom-8 duration-700 space-y-6 max-w-5xl mx-auto">
+            <div className="flex justify-center mt-8 mb-4">
+                <div className="bg-slate-900/80 p-1 rounded-xl border border-slate-700 flex w-full sm:w-auto">
+                    <button onClick={() => setActiveTab('image')} className={`flex-1 sm:px-8 py-3 rounded-lg text-sm font-bold flex justify-center items-center gap-2 transition-all ${activeTab === 'image' ? 'bg-rose-500 text-slate-950' : 'text-slate-400 hover:text-white'}`}>
+                        <FileText size={16} /> JSON Prompt Siap Salin
+                    </button>
+                    <button onClick={() => setActiveTab('video')} className={`flex-1 sm:px-8 py-3 rounded-lg text-sm font-bold flex justify-center items-center gap-2 transition-all ${activeTab === 'video' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-slate-400 hover:text-white'}`}>
+                        <Video size={16} /> Video Drone
+                    </button>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6">
+              {generatedConcepts.map((concept, idx) => (
+                <div key={idx} className="bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 rounded-3xl overflow-hidden shadow-2xl flex flex-col relative group">
+                  <div className={`absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-rose-400 to-pink-600 opacity-80 transition-all`}></div>
+
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="mb-4 text-center">
+                      <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
+                         <span className="px-2 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"><Type size={10}/> {concept.name}</span>
+                         <span className="px-2 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"><Compass size={10}/> Hadap {dimensions.facing.split(' ')[0]}</span>
+                         <span className="px-2 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"><BedDouble size={10}/> {bedrooms} <Bath size={10} className="ml-1"/> {bathrooms}</span>
+                      </div>
+                      <h3 className="text-3xl text-white mb-2 tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>{concept.name}</h3>
+                      <p className="text-sm text-rose-400 font-medium mb-1">Gaya: {concept.subtitle}</p>
+                      <p className="text-xs text-slate-400 font-mono bg-slate-950 p-2 rounded-lg inline-block border border-slate-800">{concept.description}</p>
+                    </div>
+
+                    <div className="bg-[#0D1117] p-4 rounded-xl border border-slate-700/50 relative mb-4 text-green-400 text-xs leading-relaxed font-mono overflow-y-auto max-h-[300px] custom-scrollbar whitespace-pre-wrap">
+                      {activeTab === 'image' ? concept.prompt : concept.videoPrompt}
+                    </div>
+
+                    <button 
+                      onClick={() => copyToClipboard(activeTab === 'image' ? concept.prompt : concept.videoPrompt, idx, activeTab)}
+                      className={`w-full py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-sm uppercase tracking-wider ${
+                        copiedIndex === `${idx}-${activeTab}`
+                        ? 'bg-emerald-500 text-slate-950' 
+                        : 'bg-rose-500 hover:bg-rose-400 text-slate-950'
+                      }`}
+                    >
+                      {copiedIndex === `${idx}-${activeTab}` ? <Check size={16} /> : <Copy size={16} />} 
+                      {copiedIndex === `${idx}-${activeTab}` ? 'Tersalin!' : 'Salin JSON Prompt V76'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </main>
+
+      <style dangerouslySetInnerHTML={{__html: `
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); rounded: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(244, 63, 94, 0.3); border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(244, 63, 94, 0.6); }
+      `}} />
+    </div>
+  );
+}
